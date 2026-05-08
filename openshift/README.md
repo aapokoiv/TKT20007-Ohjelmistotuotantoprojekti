@@ -18,6 +18,8 @@ Sovellus on GitHubissa siinä tilanteessa mihin tämä tutoriaali päättyy. Alk
 
 Käytössämme on Tietojenkäsittelytieteen laitoksen  [OKD-klusteri](https://console-openshift-console.apps.okd-cs-test-0.k8s.cs.helsinki.fi). OKD on vapaan lisenssin tukematon Openshift klusteri. OpenShift on [Kubernetes](https://github.com/mluukkai/openshift-demo/blob/main/.github/workflows/main.yaml)-klusteri tietyin lisämaustein. Tukea OKD käyttöön voi löytää myös Openshift dokumentaatiosta.
 
+Klusteria koskavia tukitikettejä varten on luotu myös [okd-tikettimylly](https://version.helsinki.fi/toska-k8s/okd-tikettimylly) repositorio. 
+
 Kubernetes on melko monimutkainen olio, kurssi [DevOps with Kubernetes](https://devopswithkubernetes.com/) käsittelee aihetta laajasti. Seuraavassa käydään läpi minimioppimäärä yksinkertaisen sovelluksen tarpeisiin.
 
 Ytimessä olevan Kuberneteksen lisäksi OpenShift sisältää mm. graafisen käyttöliittymän, jonka kautta konfiguraatioita on mahdollista tehdä, mutta se **ei ole sallittua** tällä kurssilla, sillä näin päädytään usein hallitsemattoman epämääräisiin konfiguraatioihin. On suositeltavaa pitäytyä määrittelyissä mahdollisimman "puhtaassa" Kuberneteksessa, ja näin tulemme seuraavassakin tekemään.
