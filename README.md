@@ -12,8 +12,8 @@ Ohtuprojekti osallistujan silmin: syksyn 2024 NOW-tietokanta-tiimin [kertomus](h
 
 **Demot** kevät 2026:
 
-* Välidemo pe 27.2. klo 9.00-12 Exactum B123
-* Loppudemo ke 29.4. klo 9:00-12 Exactum CK112
+* Välidemo (tiivisprojekti loppudemo) to 25.6. klo 10.00-12 Physicum E204
+* Loppudemo ke 26.8. klo 10:00-12, paikka tulee myöhemmin
 
 Aloitus tasalta ilman akateemista varttia.
 
