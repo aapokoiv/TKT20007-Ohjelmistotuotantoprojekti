@@ -1,4 +1,4 @@
-## OpenShift-konttialustan käyttö staging-ympäristönä
+## OKD-konttialustan käyttö staging-ympäristönä
 
 Tämä ohje olettaa, että hallitset jossain määrin Dockeria, esim. vähintään luvun _Docker basics_ verran kurssilta [DevOps with Docker](https://courses.mooc.fi/org/uh-cs/courses/devops-with-docker). Docker-kurssi jatkuu vielä 16.6. asti, seuraava versio kurssista alkaa toisen periodin alussa. Jokaisen käpistelijän kannattaa ehdottomasti suorittaa kurssi!
 
@@ -14,27 +14,29 @@ Projektiin on määritelty GitHub Action -workflow, joka luo projektista Docker-
 
 Sovellus on GitHubissa siinä tilanteessa mihin tämä tutoriaali päättyy. Alkutilanne on branchissa [start](https://github.com/mluukkai/openshift-demo/tree/start). Koodissa ei muutoksia ole, mutta tutoriaalin aikana tehdyt konfiguraatiot puuttuvat vielä haarasta start.
 
-### OpenShift
+### OKD
 
-Käytössämme on Tietotekniikkakeskuksen [OpenShift](https://devops.pages.helsinki.fi/guides/platforms/tike-container-platform.html)-klusteri. OpenShift on [Kubernetes](https://github.com/mluukkai/openshift-demo/blob/main/.github/workflows/main.yaml)-klusteri tietyin lisämaustein.
+Käytössämme on Tietojenkäsittelytieteen laitoksen  [OKD-klusteri](https://console-openshift-console.apps.okd-cs-test-0.k8s.cs.helsinki.fi). OKD on vapaan lisenssin tukematon Openshift klusteri. OpenShift on [Kubernetes](https://github.com/mluukkai/openshift-demo/blob/main/.github/workflows/main.yaml)-klusteri tietyin lisämaustein. Tukea OKD käyttöön voi löytää myös Openshift dokumentaatiosta.
+
+Klusteria koskavia tukitikettejä varten on luotu myös [okd-tikettimylly](https://version.helsinki.fi/toska-k8s/okd-tikettimylly) repositorio. 
 
 Kubernetes on melko monimutkainen olio, kurssi [DevOps with Kubernetes](https://devopswithkubernetes.com/) käsittelee aihetta laajasti. Seuraavassa käydään läpi minimioppimäärä yksinkertaisen sovelluksen tarpeisiin.
 
-Ytimessä olevan Kuberneteksen lisäksi OpenShift sisältää mm. graafisen käyttöliittymän, jonka kautta konfiguraatioita on mahdollista tehdä, mutta se **ei ole suositeltua** sillä näin päädytään usein hallitsemattoman epämääräisiin konfiguraatioihin. On suositeltavaa pitäytyä määrittelyissä mahdollisimman "puhtaassa" Kuberneteksessa, ja näin tulemme seuraavassakin tekemään.
+Ytimessä olevan Kuberneteksen lisäksi OKD sisältää mm. graafisen käyttöliittymän, jonka kautta konfiguraatioita on mahdollista tehdä, mutta se **ei ole suositeltua** tällä kurssilla, sillä näin päädytään usein hallitsemattoman epämääräisiin konfiguraatioihin. On suositeltavaa pitäytyä määrittelyissä mahdollisimman "puhtaassa" Kuberneteksessa, ja näin tulemme seuraavassakin tekemään. Webkäyttöliittymä voi kuitenkin olla tehokas työkalu projektin tilan tarkkailuun.
 
 > [!CAUTION]
-> Älä määrittele mitään OpenShiftin käyttöliittymän kautta.  
+> Älä määrittele mitään webkäyttöliittymän kautta.  
 > Jos teet näin, teknistä tukea ei kurssin puolesta ole luvassa.
 
-Käytämme klusteria yksinomaan komentoriviltä, komennon [oc](https://docs.redhat.com/en/documentation/openshift_container_platform/4.11/html/cli_tools/openshift-cli-oc) avulla. `oc` toimii samoin kun Kubernetesin [kubectl](https://kubernetes.io/docs/reference/kubectl/), mutta se sisältää muutamia OpenShift-spesifejä komentoja.
+Käytämme klusteria yksinomaan komentoriviltä, komennon [oc](https://docs.okd.io/4.20/cli_reference/openshift_cli/getting-started-cli.html) avulla. `oc` toimii samoin kun Kubernetesin [kubectl](https://kubernetes.io/docs/reference/kubectl/), mutta se sisältää muutamia OpenShift-spesifejä komentoja. On hyvä että oc työkalun versio vastaa klusterin versiota.
 
-Asenna nyt koneellesi `oc` [tämän ohjeen](https://devops.pages.helsinki.fi/guides/platforms/tike-container-platform.html#openshift-client) mukaan. Kannattaa myös ehdottomasti konfiguroida [tabulaattoritäydennys](https://docs.redhat.com/en/documentation/openshift_container_platform/4.9/html/cli_tools/openshift-cli-oc#cli-enabling-tab-completion).
+Kannattaa myös ehdottomasti konfiguroida [tabulaattoritäydennys](https://docs.redhat.com/en/documentation/openshift_container_platform/4.9/html/cli_tools/openshift-cli-oc#cli-enabling-tab-completion).
 
 Oletetaan nyt, että `oc` asennettu. Jotta yhteys klusteriin toimisi, on oltava Eduroamissa tai HY:n vpn:ssä. 
 
-Kirjaudu klusterille suorittamalla komento `oc login -u <username> https://api.ocp-test-0.k8s.it.helsinki.fi:6443`.
+Kirjaudu klusterille suorittamalla komento `oc login --web https://api.okd-cs-test-0.k8s.cs.helsinki.fi:6443`.
 
-Jostain syystä kirjautuminen ei kaikilla toimi. Jos käy näin, kirjaudu OpenShift-webkonsoliin <https://console-openshift-console.apps.ocp-test-0.k8s.it.helsinki.fi> ja valitse _Copy login command_:
+Klusteriin voi kirjautua myös OKD-webkonsolin [https://console-openshift-console.okd-cs-test-0.k8s.cs.helsinki.fi](https://console-openshift-console.apps.okd-cs-test-0.k8s.cs.helsinki.fi) kautta valitsemalla _Copy login command_:
 
 <img src="https://raw.githubusercontent.com/HY-TKTL/TKT20007-Ohjelmistotuotantoprojekti/refs/heads/master/openshift/images/k1.png?raw=true" width="600">
 
@@ -49,13 +51,59 @@ $ oc status
 In project toska-playground on server https://api.ocp-test-0.k8s.it.helsinki.fi:6443
 ```
 
-Esimerkissä on käytössä projekti `toska-playground`. Ohtuprojekteissa käytetään projektia `ohtuprojekti-staging`. Projektista on olemassa sekä tuotanto- että testipuoli. Kysy ohjaajaltasi kumpaa ryhmäsi käyttää. 
+Esimerkissä on käytössä projekti `toska-playground`. Ohtuprojekteissa käytetään itse provisioitua projectia.
 
-Testipuolen osoite on https://api.ocp-test-0.k8s.it.helsinki.fi:6443 ja tuotantopuolen https://api.ocp-prod-0.k8s.it.helsinki.fi:6443, eli kirjautuessa käytä oikeaa osoitetta! Tuotantopuolen web-konsolin osoite on <https://console-openshift-console.apps.ocp-prod-0.k8s.it.helsinki.fi>
+Uusi projecti luodaan komennolla:
+
+```bash
+oc new-project <projectin nimi> 
+```
+
+> [!CAUTION]
+> Luo vain yksi projekti per ryhmä!
+> 
+> Nimeä projekti muotoon \<projectinimi\>-ohtu-k2026
+> 
+> Ylimääräiset tai väärällä nimellä luodut projektit voidaan poistaa ilman varoitusta!.
+
+
+Jokaisella kurssilaisella on riittävät oikeudet uuden projektin luomiseen, mutta vain yhden per ryhmäläisen tulee luoda projekti.
+Muut ryhmäläiset lisätään ryhmään luomalla projektiin sopiva `rolebinding` objekti.
+Tiedostojen lisääminen klusterille käydään läpi seuraavassa osiossa, mutta
+sopiva rolebinding tiedosto näyttää esimerkiksi tältä:
+```yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ohtu-namespace-adminit
+  namespace: toska-playground
+subjects:  #Lista esimerkkikäyttäjiä, korvaa nämä oman ryhmän jäsenillä
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: pikkukalle # Haluat muuttaa tämän 
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: vallatonville # Ja tämän 
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: mehilainenmaija # Ja tämän...
+  - ... # Ja lisätä loput ryhmäläiset vastaavasti tänne
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+```
+
+Ryhmän jäsenille siis annetaan `admin` tason käyttöoikeudet projektin sisällä. `subjects` listan objektien `name` kenttään **tulee asettaa yliopiston käyttäjätunnus.**
+
+Tällä kurssilla käytetään ainoastaan okd-cs-test-0 klusteria jonka osoitteet ovat:
+- <https://console-openshift-console.apps.okd-cs-test-0.k8s.cs.helsinki.fi>
+- <https://api.okd-cs-test-0.k8s.cs.helsinki.fi:6443>
+
+Seuraava ohjeistus on kirjoitettu käyttäen aiempaa Tiken Openshift-klusteria. Koska OKD ja Openshift alustat ovat hyvin lähellä toisiaan, on suurin eroavaisuus `okd-cs-test-0` alustaan sen nimi ja nimen vaikutus palvelun urleihin. 
 
 ### Pod ja deployment
-
-OpenShiftissa sovelluksen paketoinnin perusyksikkö on [podi](https://kubernetes.io/docs/concepts/workloads/pods/) (engl. pod). Podit ovat Kubernetes-ympäristön perusyksiköitä, ja ne sisältävät yleensä yhden Docker-imagen. Joissain tilanteissa podissa voi olla useita imageja, mutta tämä on yleensä mielekästä vain, jos imaget ovat tiiviisti yhteydessä toisiinsa, esimerkiksi jakamalla verkkoyhteyden tai tallennustilan.
+OKD:ssa sovelluksen paketoinnin perusyksikkö on [podi](https://kubernetes.io/docs/concepts/workloads/pods/) (engl. pod). Podit ovat Kubernetes-ympäristön perusyksiköitä, ja ne sisältävät yleensä yhden Docker-imagen. Joissain tilanteissa podissa voi olla useita imageja, mutta tämä on yleensä mielekästä vain, jos imaget ovat tiiviisti yhteydessä toisiinsa, esimerkiksi jakamalla verkkoyhteyden tai tallennustilan.
 
 Podeja ei yleensä laiteta klusteriin suoraan. Näiden sijaan käytetään [deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)-objekteja.
 
@@ -95,6 +143,10 @@ Deployment luodaan klusterille seuraavalla komennolla ($ on komentokehote):
 ```bash
 $ oc apply -f manifests/deployment.yaml
 ```
+> [!WARNING]
+> Koska kyseessä on test klusteri pidä huolta että
+> kaikki klusteriin `oc apply` komennolla lisätyt resurssit ovat
+> tallessa myös esimerkiksi repositoriossa. Muista kuitenkin salaisuuksienhallinta!
 
 Deployment näyttää onnistuneen:
 
@@ -226,8 +278,9 @@ Käytettäköön siis deklaratiivista tyyliä, joka on myös tämän hetkisen te
 Laajennetaan ohtuprojektimanifestia:
 
 > [!CAUTION]
-> Älä määrittele mitään OpenShiftin käyttöliittymän kautta tai imperatiivisin käskyin.  
+> Älä määrittele mitään OKD käyttöliittymän kautta tai imperatiivisin käskyin.  
 > Jos teet näin, teknistä tukea ei kurssin puolesta ole luvassa.
+
 
 ### Service
 
