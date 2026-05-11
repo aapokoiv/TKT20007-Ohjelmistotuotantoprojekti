@@ -22,7 +22,7 @@ Klusteria koskavia tukitikettejä varten on luotu myös [okd-tikettimylly](https
 
 Kubernetes on melko monimutkainen olio, kurssi [DevOps with Kubernetes](https://devopswithkubernetes.com/) käsittelee aihetta laajasti. Seuraavassa käydään läpi minimioppimäärä yksinkertaisen sovelluksen tarpeisiin.
 
-Ytimessä olevan Kuberneteksen lisäksi OpenShift sisältää mm. graafisen käyttöliittymän, jonka kautta konfiguraatioita on mahdollista tehdä, mutta se **ei ole sallittua** tällä kurssilla, sillä näin päädytään usein hallitsemattoman epämääräisiin konfiguraatioihin. On suositeltavaa pitäytyä määrittelyissä mahdollisimman "puhtaassa" Kuberneteksessa, ja näin tulemme seuraavassakin tekemään.
+Ytimessä olevan Kuberneteksen lisäksi OKD sisältää mm. graafisen käyttöliittymän, jonka kautta konfiguraatioita on mahdollista tehdä, mutta se **ei ole suositeltua** tällä kurssilla, sillä näin päädytään usein hallitsemattoman epämääräisiin konfiguraatioihin. On suositeltavaa pitäytyä määrittelyissä mahdollisimman "puhtaassa" Kuberneteksessa, ja näin tulemme seuraavassakin tekemään. Webkäyttöliittymä voi kuitenkin olla tehokas työkalu projektin tilan tarkkailuun.
 
 > [!CAUTION]
 > Älä määrittele mitään webkäyttöliittymän kautta.  
@@ -51,27 +51,54 @@ $ oc status
 In project toska-playground on server https://api.ocp-test-0.k8s.it.helsinki.fi:6443
 ```
 
-Esimerkissä on käytössä projekti `toska-playground`. Ohtuprojekteissa käytetään itse provisioitua projectia. Uusi projecti luodaan komennolla:
+Esimerkissä on käytössä projekti `toska-playground`. Ohtuprojekteissa käytetään itse provisioitua projectia.
+
+Uusi projecti luodaan komennolla:
 
 ```bash
 oc new-project <projectin nimi> 
 ```
+
 > [!CAUTION]
 > Luo vain yksi projekti per ryhmä!
 > 
 > Nimeä projekti muotoon \<projectinimi\>-ohtu-k2026
 > 
-> Ylimääräiset tai väärällä nimellä luodut projektit voidaan poistaa ilman varoitusta.
+> Ylimääräiset tai väärällä nimellä luodut projektit voidaan poistaa ilman varoitusta!.
+
+
+Jokaisella kurssilaisella on riittävät oikeudet uuden projektin luomiseen, mutta vain yhden per ryhmäläisen tulee luoda projekti.
+Muut ryhmäläiset lisätään ryhmään luomalla projektiin sopiva `rolebinding` objekti.
+Tiedostojen lisääminen klusterille käydään läpi seuraavassa osiossa, mutta
+sopiva rolebinding tiedosto näyttää esimerkiksi tältä:
+```yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: ohtu-namespace-adminit
+  namespace: toska-playground
+subjects:  #Lista esimerkkikäyttäjiä, korvaa nämä oman ryhmän jäsenillä
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: pikkukalle # Haluat muuttaa tämän 
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: vallatonville # Ja tämän 
+  - kind: User
+    apiGroup: rbac.authorization.k8s.io
+    name: mehilainenmaija # Ja tämän...
+  - ... # Ja lisätä loput ryhmäläiset vastaavasti tänne
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+```
+
+Ryhmän jäsenille siis annetaan `admin` tason käyttöoikeudet projektin sisällä. `subjects` listan objektien `name` kenttään **tulee asettaa yliopiston käyttäjätunnus.**
 
 Tällä kurssilla käytetään ainoastaan okd-cs-test-0 klusteria jonka osoitteet ovat:
 - <https://console-openshift-console.apps.okd-cs-test-0.k8s.cs.helsinki.fi>
 - <https://api.okd-cs-test-0.k8s.cs.helsinki.fi:6443>
-
-> [!WARNING]
-> Koska kyseessä on test klusteri pidä huolta että
-> kaikki klusteriin `oc apply` komennolla lisätyt resurssit ovat
-> tallessa myös esimerkiksi repositoriossa. Muista kuitenkin salaisuuksienhallinta!
-
 
 Seuraava ohjeistus on kirjoitettu käyttäen aiempaa Tiken Openshift-klusteria. Koska OKD ja Openshift alustat ovat hyvin lähellä toisiaan, on suurin eroavaisuus `okd-cs-test-0` alustaan sen nimi ja nimen vaikutus palvelun urleihin. 
 
@@ -116,6 +143,10 @@ Deployment luodaan klusterille seuraavalla komennolla ($ on komentokehote):
 ```bash
 $ oc apply -f manifests/deployment.yaml
 ```
+> [!WARNING]
+> Koska kyseessä on test klusteri pidä huolta että
+> kaikki klusteriin `oc apply` komennolla lisätyt resurssit ovat
+> tallessa myös esimerkiksi repositoriossa. Muista kuitenkin salaisuuksienhallinta!
 
 Deployment näyttää onnistuneen:
 
